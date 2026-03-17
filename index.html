@@ -628,14 +628,14 @@
 
     <div class="grid-3" style="margin-bottom: 18px;">
       <div class="field">
-        <label>주택 보유 수
-          <span class="hint">(취득 당시)</span>
+        <label>취득 후 보유 주택 수
+          <span class="hint">(취득 포함 합산)</span>
         </label>
         <div class="input-wrap">
           <select id="houseCount" onchange="autoCalc()" style="padding-right:14px;">
-            <option value="0">무주택 → 1주택</option>
-            <option value="1">1주택 → 2주택</option>
-            <option value="2">2주택 이상</option>
+            <option value="1">1주택 (무주택→1주택)</option>
+            <option value="2">2주택 (1주택→2주택)</option>
+            <option value="3">3주택 이상</option>
           </select>
         </div>
       </div>
@@ -643,35 +643,102 @@
         <label>조정대상지역 여부</label>
         <div class="input-wrap">
           <select id="isAdjusted" onchange="autoCalc()" style="padding-right:14px;">
-            <option value="0">비조정</option>
-            <option value="1">조정대상</option>
+            <option value="0">비조정대상지역</option>
+            <option value="1">조정대상지역</option>
           </select>
         </div>
       </div>
       <div class="field">
-        <label>취득세율 <span class="hint">(자동계산)</span></label>
-        <div class="computed-field" id="acquiTaxRateBox">
+        <label>전용면적 85㎡ 초과 여부 <span class="hint">(농특세)</span></label>
+        <div class="input-wrap">
+          <select id="includeAgri" onchange="autoCalc()" style="padding-right:14px;">
+            <option value="0">85㎡ 이하 (농특세 면제)</option>
+            <option value="1">85㎡ 초과 (농특세 0.2%)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:12px;">
+      <div class="field">
+        <label>취득세 기본세율</label>
+        <div class="computed-field">
+          <span class="computed-label">자동 산출</span>
+          <span class="computed-value" id="acquiBaseRateText">—</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>최종 취득세율 <span class="hint">(지방교육세+농특세)</span></label>
+        <div class="computed-field">
           <span class="computed-label">자동 산출</span>
           <span class="computed-value" id="acquiTaxRateText">—</span>
         </div>
       </div>
     </div>
 
-    <div class="grid-2">
+    <div class="grid-2" style="margin-bottom:18px;">
       <div class="field">
-        <label>취득세 금액 <span class="hint">(지방교육세 포함)</span></label>
+        <label>취득세 금액 <span class="hint">(지방교육세+농특세 포함)</span></label>
         <div class="computed-field">
           <span class="computed-label">자동 계산</span>
           <span class="computed-value" id="acquiTaxAmt">—</span>
         </div>
       </div>
       <div class="field">
-        <label>총 매수 비용 <span class="hint">(매수가 + 취득세)</span></label>
+        <label>취득세 합산 <span class="hint">(매수가 + 취득세)</span></label>
         <div class="computed-field">
           <span class="computed-label">자동 계산</span>
+          <span class="computed-value" id="acquiTotal">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-divider"><span>중개수수료 계산</span></div>
+
+    <div class="grid-3" style="margin-bottom:18px;">
+      <div class="field">
+        <label>중개수수료 상한요율 <span class="hint">(자동)</span></label>
+        <div class="computed-field">
+          <span class="computed-label">2025년 기준</span>
+          <span class="computed-value" id="brokerRateText">—</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>실제 적용 요율 <span class="hint">(협의 조정 가능)</span></label>
+        <div class="input-wrap">
+          <input type="number" id="brokerRateInput" placeholder="예: 0.4" step="0.01" oninput="autoCalc()">
+          <span class="unit">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>중개수수료 <span class="hint">(VAT 10% 별도)</span></label>
+        <div class="computed-field">
+          <span class="computed-label">자동 계산</span>
+          <span class="computed-value" id="brokerFeeAmt">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>중개수수료 VAT <span class="hint">(10%)</span></label>
+        <div class="computed-field">
+          <span class="computed-label">자동 계산</span>
+          <span class="computed-value" id="brokerVat">—</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>총 매수 비용 <span class="hint">(매수가 + 취득세 + 수수료)</span></label>
+        <div class="computed-field" style="border-color: rgba(0,136,255,0.3); background: #eef6ff;">
+          <span class="computed-label" style="font-weight:600;">최종 합산</span>
           <span class="computed-value" id="totalBuyCost">—</span>
         </div>
       </div>
+    </div>
+
+    <div class="field-note" style="margin-top:16px;">
+      💡 <strong>2025년 주택 매매 중개보수 상한요율</strong> — 5천만원 미만 0.6% / 5천만~2억 0.5% / 2억~9억 0.4% / 9억~12억 0.5% / 12억~15억 0.6% / 15억 이상 0.7% (한도 900만원). 실제 적용 요율을 직접 수정할 수 있습니다.
     </div>
   </div>
 
@@ -693,16 +760,16 @@
         </div>
       </div>
       <div class="field">
-        <label>실투자금 <span class="hint">(취득세 포함)</span></label>
+        <label>실투자금 <span class="hint">(취득세+수수료 포함)</span></label>
         <div class="computed-field">
-          <span class="computed-label">매수비용 − 전세금</span>
+          <span class="computed-label">매수총비용 − 전세금</span>
           <span class="computed-value" id="realInvestAmt">—</span>
         </div>
       </div>
     </div>
 
     <div class="field-note" style="margin-top:16px;" id="jeonse-note">
-      💡 실투자금 = 매수가 + 취득세 − 전세보증금. 갭투자의 실제 투입 자본입니다.
+      💡 실투자금 = 매수가 + 취득세 + 중개수수료 − 전세보증금. 갭투자의 실제 투입 자본입니다.
     </div>
   </div>
 
@@ -833,34 +900,47 @@
 </div>
 
 <script>
-// ─── 취득세율 계산 ───────────────────────────────────────────────────────────
-function getAcquiTaxRate(buyPrice, houseCount, isAdjusted) {
-  const price = buyPrice * 10000; // 원 단위
-  let rate = 0;
+// ─── 취득세율 계산 (2025년 지방세법 기준) ────────────────────────────────────
+// 선택값: houseCount = 취득 후 보유 주택 수 (1,2,3+)
+// isAdjusted = 1 (조정대상지역), 0 (비조정)
 
-  if (houseCount === 0) {
-    // 무주택 → 1주택
-    if (price <= 60000000) rate = 0.01;
-    else if (price <= 90000000) rate = 0.02;
-    else rate = 0.03;
-  } else if (houseCount === 1) {
-    // 1→2주택
-    if (isAdjusted === 1) rate = 0.08;
-    else rate = 0.01; // 비조정 2주택: 일반세율
-  } else {
-    // 2주택 이상
-    if (isAdjusted === 1) rate = 0.12;
-    else rate = 0.12;
+function getAcquiBaseRate(buyPrice, houseCount, isAdjusted) {
+  const price = buyPrice * 10000; // 원 단위
+
+  // ── 1주택 (무주택 → 1주택) : 취득가액 기준 일반세율 ──
+  if (houseCount === 1) {
+    if (price <= 60000000)  return 0.01; // 6억 이하 → 1%
+    if (price <= 90000000)  return 0.02; // 6억 초과 9억 이하 → 2%
+    return 0.03;                          // 9억 초과 → 3%
   }
-  return rate;
+
+  // ── 2주택 ──
+  if (houseCount === 2) {
+    if (isAdjusted === 1) return 0.08;   // 조정 2주택 → 8%
+    // 비조정 2주택 → 일반세율 (취득가액 기준)
+    if (price <= 60000000)  return 0.01;
+    if (price <= 90000000)  return 0.02;
+    return 0.03;
+  }
+
+  // ── 3주택 이상 ──
+  if (houseCount >= 3) {
+    if (isAdjusted === 1) return 0.12;   // 조정 3주택+ → 12%
+    return 0.08;                          // 비조정 3주택 → 8% (비조정 4주택+도 동일)
+  }
+
+  return 0.01;
 }
 
-// 지방교육세 포함 실효세율
-function getTotalAcquiRate(baseRate) {
-  // 지방교육세: 취득세의 20% (중과세는 20%)
-  let eduRate = baseRate * 0.2;
-  // 농어촌특별세: 85㎡ 초과 시 0.2% (여기서는 0.2%로 가정)
-  let agriRate = 0.002;
+// 지방교육세 + 농어촌특별세 포함 실효세율 계산
+// ※ 농어촌특별세: 85㎡ 초과 0.2%, 이하 면제 → UI에 전용면적 입력 없으므로 '85㎡ 이하' 기본 (0%)
+//   사용자 선택으로 포함 여부 구분
+function getTotalAcquiRate(baseRate, includeAgri) {
+  // 지방교육세: 일반세율(1~3%) → 취득세의 20% / 중과세율(8%,12%) → 취득세의 20%
+  // (지방세법상 표준세율 구간 무관하게 취득세액의 20%)
+  const eduRate = baseRate * 0.20;
+  // 농어촌특별세: 85㎡ 초과 주택에만 0.2%, 이하는 0
+  const agriRate = includeAgri ? 0.002 : 0;
   return baseRate + eduRate + agriRate;
 }
 
@@ -967,6 +1047,32 @@ function getLtcRate(holdPeriod, isTaxFree) {
   return 0; // 실제 계산은 보유연수 입력 없으므로 0으로 처리
 }
 
+// ─── 중개수수료 상한요율 계산 (2025년 주택 매매 기준) ───────────────────────
+function getBrokerRate(buyPrice) {
+  // buyPrice: 만원 단위
+  if (buyPrice < 5000)        return 0.006;   // 0.6% (한도 25만원)
+  if (buyPrice < 20000)       return 0.005;   // 0.5% (한도 80만원)
+  if (buyPrice < 90000)       return 0.004;   // 0.4%
+  if (buyPrice < 120000)      return 0.005;   // 0.5%
+  if (buyPrice < 150000)      return 0.006;   // 0.6%
+  return 0.007;                               // 0.7% (한도 900만원)
+}
+
+function getBrokerLimit(buyPrice) {
+  // 한도액 (만원)
+  if (buyPrice < 5000)   return 25;
+  if (buyPrice < 20000)  return 80;
+  if (buyPrice >= 150000) return 900;
+  return Infinity;
+}
+
+function calcBrokerFee(buyPrice, customRate) {
+  const rate = customRate != null ? customRate / 100 : getBrokerRate(buyPrice);
+  const limit = getBrokerLimit(buyPrice);
+  const fee = buyPrice * rate;
+  return Math.min(fee, limit); // 한도 적용
+}
+
 // ─── 포맷 ────────────────────────────────────────────────────────────────────
 function fmt(n) {
   if (n === null || n === undefined || isNaN(n)) return '—';
@@ -981,24 +1087,47 @@ function autoCalc() {
   const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
   const houseCount = parseInt(document.getElementById('houseCount').value);
   const isAdjusted = parseInt(document.getElementById('isAdjusted').value);
+  const includeAgri = parseInt(document.getElementById('includeAgri').value);
   const jeonsePrice = parseFloat(document.getElementById('jeonsePrice').value) || 0;
+  const brokerRateInputVal = document.getElementById('brokerRateInput').value;
+  const customBrokerRate = brokerRateInputVal !== '' ? parseFloat(brokerRateInputVal) : null;
 
   if (buyPrice > 0) {
-    const baseRate = getAcquiTaxRate(buyPrice, houseCount, isAdjusted);
-    const totalRate = getTotalAcquiRate(baseRate);
+    // 취득세
+    const baseRate = getAcquiBaseRate(buyPrice, houseCount, isAdjusted);
+    const totalRate = getTotalAcquiRate(baseRate, includeAgri);
     const acquiTax = buyPrice * totalRate;
-    const totalBuy = buyPrice + acquiTax;
+    const acquiTotal = buyPrice + acquiTax;
+
+    // 중개수수료
+    const maxBrokerRate = getBrokerRate(buyPrice);
+    const brokerFee = calcBrokerFee(buyPrice, customBrokerRate);
+    const brokerVat = brokerFee * 0.1;
+    const brokerTotal = brokerFee + brokerVat;
+
+    // 총 매수비용
+    const totalBuy = acquiTotal + brokerTotal;
     const realInvest = totalBuy - jeonsePrice;
 
-    document.getElementById('acquiTaxRateText').textContent = fmtRate(totalRate) + ' (지방교육세 포함)';
+    // 상한요율 자동 입력
+    if (brokerRateInputVal === '') {
+      document.getElementById('brokerRateInput').value = (maxBrokerRate * 100).toFixed(1);
+    }
+
+    document.getElementById('acquiBaseRateText').textContent = fmtRate(baseRate);
+    document.getElementById('acquiTaxRateText').textContent = fmtRate(totalRate);
     document.getElementById('acquiTaxAmt').textContent = fmt(acquiTax);
+    document.getElementById('acquiTotal').textContent = fmt(acquiTotal);
+    document.getElementById('brokerRateText').textContent = fmtRate(maxBrokerRate) + ' (상한)';
+    document.getElementById('brokerFeeAmt').textContent = fmt(brokerFee);
+    document.getElementById('brokerVat').textContent = fmt(brokerVat);
     document.getElementById('totalBuyCost').textContent = fmt(totalBuy);
     document.getElementById('realInvestAmt').textContent = fmt(realInvest);
   } else {
-    document.getElementById('acquiTaxRateText').textContent = '—';
-    document.getElementById('acquiTaxAmt').textContent = '—';
-    document.getElementById('totalBuyCost').textContent = '—';
-    document.getElementById('realInvestAmt').textContent = '—';
+    ['acquiBaseRateText','acquiTaxRateText','acquiTaxAmt','acquiTotal',
+     'brokerRateText','brokerFeeAmt','brokerVat','totalBuyCost','realInvestAmt'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
   }
 
   // LTC
@@ -1019,23 +1148,34 @@ function calculate() {
   const sellHouseCount = parseInt(document.getElementById('sellHouseCount').value);
   const isTaxFree = parseInt(document.getElementById('isTaxFree').value);
   const extraCostInput = parseFloat(document.getElementById('extraCost').value) || 0;
+  const brokerRateInputVal = document.getElementById('brokerRateInput').value;
+  const customBrokerRate = brokerRateInputVal !== '' ? parseFloat(brokerRateInputVal) : null;
 
   if (!buyPrice || !curPrice) {
     alert('매수가와 현재 호가를 입력해주세요.');
     return;
   }
 
-  const baseRate = getAcquiTaxRate(buyPrice, houseCount, isAdjusted);
-  const totalRate = getTotalAcquiRate(baseRate);
+  // 취득세
+  const includeAgri = parseInt(document.getElementById('includeAgri').value);
+  const baseRate = getAcquiBaseRate(buyPrice, houseCount, isAdjusted);
+  const totalRate = getTotalAcquiRate(baseRate, includeAgri);
   const acquiTax = buyPrice * totalRate;
-  const totalBuy = buyPrice + acquiTax;
+
+  // 중개수수료 (매수 시)
+  const brokerFee = calcBrokerFee(buyPrice, customBrokerRate);
+  const brokerVat = brokerFee * 0.1;
+  const brokerTotal = brokerFee + brokerVat;
+
+  // 총 매수비용
+  const totalBuy = buyPrice + acquiTax + brokerTotal;
   const realInvest = totalBuy - jeonsePrice;
 
-  // 양도세
+  // 양도세 (필요경비에 취득세 + 매수 중개수수료 포함)
   const taxResult = calcTransferTax({
     buyPrice,
     sellPrice: curPrice,
-    acquiTax,
+    acquiTax: acquiTax + brokerTotal, // 취득세 + 수수료 모두 필요경비
     extraCost: extraCostInput,
     holdPeriod,
     sellHouseCount,
@@ -1043,15 +1183,12 @@ function calculate() {
     isAdjusted,
   });
 
-  const rawGain = curPrice - buyPrice; // 시세차익 (취득세 전)
-  const netGain = curPrice - totalBuy - extraCostInput - taxResult.total; // 세후 순수익 (전세 제외)
-  const actualNetGain = netGain; // 실수령 기준 (전세 이미 돌려줬다 가정)
+  const rawGain = curPrice - buyPrice;
+  const netGain = curPrice - totalBuy - extraCostInput - taxResult.total;
 
-  // 실수령액: 매도가 - 전세반환 - 양도세 - 기타비용
   const refundJeonse = curJeonse || jeonsePrice;
   const netReceipt = curPrice - refundJeonse - taxResult.total - extraCostInput;
 
-  // 수익률: 실투자금 대비
   const yieldRate = realInvest > 0 ? netGain / realInvest : 0;
   const simpleYield = realInvest > 0 ? rawGain / realInvest : 0;
 
@@ -1070,7 +1207,7 @@ function calculate() {
     <div class="summary-box ${positiveGain ? 'positive' : 'negative'}">
       <div class="summary-box-label">세후 순수익</div>
       <div class="summary-box-value ${positiveGain ? 'green' : 'red'}">${fmt(netGain)}</div>
-      <div class="summary-box-sub">양도세 · 취득세 · 경비 제외</div>
+      <div class="summary-box-sub">양도세 · 취득세 · 수수료 · 경비 제외</div>
     </div>
     <div class="summary-box ${positiveGain ? 'positive' : 'negative'}">
       <div class="summary-box-label">실투자금 대비 수익률</div>
@@ -1078,7 +1215,7 @@ function calculate() {
       <div class="summary-box-sub">단순 시세 기준: ${fmtRate(simpleYield)}</div>
     </div>
     <div class="summary-box">
-      <div class="summary-box-label">실투자금 (취득세 포함)</div>
+      <div class="summary-box-label">실투자금 (취득세+수수료 포함)</div>
       <div class="summary-box-value accent">${fmt(realInvest)}</div>
       <div class="summary-box-sub">매수총비용 − 전세</div>
     </div>
@@ -1106,13 +1243,14 @@ function calculate() {
     <tr><td>📥 매수가</td><td>${fmt(buyPrice)}</td></tr>
     <tr class="sub-row"><td>취득세율 (지방교육세 포함)</td><td>${fmtRate(totalRate)}</td></tr>
     <tr class="sub-row"><td>취득세 금액</td><td class="tag-minus">▼ ${fmt(acquiTax)}</td></tr>
-    <tr><td>총 매수 비용</td><td>${fmt(totalBuy)}</td></tr>
+    <tr class="sub-row"><td>중개수수료 (VAT 포함)</td><td class="tag-minus">▼ ${fmt(brokerTotal)}</td></tr>
+    <tr><td style="font-weight:600;">총 매수 비용</td><td style="font-weight:600;">${fmt(totalBuy)}</td></tr>
     <tr><td>🔑 전세보증금 (차감)</td><td class="tag-plus">▲ ${fmt(jeonsePrice)}</td></tr>
     <tr><td style="font-weight:700;color:var(--text)">실투자금</td><td style="color:var(--accent);font-weight:700">${fmt(realInvest)}</td></tr>
     <tr><td colspan="2" style="padding:8px 0;"><div class="divider" style="margin:0"></div></td></tr>
     <tr><td>📤 현재 호가 (매도가)</td><td>${fmt(curPrice)}</td></tr>
     <tr class="sub-row"><td>전세 반환금</td><td class="tag-minus">▼ ${fmt(refundJeonse)}</td></tr>
-    <tr class="sub-row"><td>기타 경비 (중개수수료 등)</td><td class="tag-minus">▼ ${fmt(extraCostInput)}</td></tr>
+    <tr class="sub-row"><td>기타 경비 (매도 중개수수료 등)</td><td class="tag-minus">▼ ${fmt(extraCostInput)}</td></tr>
     <tr class="sub-row"><td>양도세 + 지방세</td><td class="tag-minus">▼ ${fmt(taxResult.total)}</td></tr>
     <tr class="total-row"><td>💵 매도 후 실수령액</td><td>${fmt(netReceipt)}</td></tr>
   `;
@@ -1122,7 +1260,7 @@ function calculate() {
     <div class="tax-section-title">양도세 산출 내역</div>
     <table class="detail-table">
       <tr><td>매도가 − 매수가</td><td>${fmt(rawGain)}</td></tr>
-      <tr class="sub-row"><td>필요경비 (취득세 + 기타)</td><td class="tag-minus">▼ ${fmt(acquiTax + extraCostInput)}</td></tr>
+      <tr class="sub-row"><td>필요경비 (취득세 + 매수수수료 + 기타)</td><td class="tag-minus">▼ ${fmt(acquiTax + brokerTotal + extraCostInput)}</td></tr>
       <tr><td>양도차익</td><td>${fmt(taxResult.taxableGain)}</td></tr>
       <tr class="sub-row"><td>장기보유특별공제</td><td>${taxResult.ltcRate > 0 ? '▼ ' + fmtRate(taxResult.ltcRate) : '해당없음'}</td></tr>
       <tr class="sub-row"><td>기본공제 (250만원)</td><td class="tag-minus">▼ 250 만원</td></tr>
