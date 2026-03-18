@@ -901,46 +901,54 @@
 
 <script>
 // ─── 취득세율 계산 (2025년 지방세법 기준) ────────────────────────────────────
-// 선택값: houseCount = 취득 후 보유 주택 수 (1,2,3+)
-// isAdjusted = 1 (조정대상지역), 0 (비조정)
+// houseCount = 취득 후 보유 주택 수 (1, 2, 3+)
+// isAdjusted = 1(조정대상지역), 0(비조정)
+// 반환값: 소수 (예: 0.01 = 1%)
 
 function getAcquiBaseRate(buyPrice, houseCount, isAdjusted) {
-  const price = buyPrice * 10000; // 원 단위
+  const price = buyPrice * 10000; // 원 단위 변환
 
-  // ── 1주택 (무주택 → 1주택) : 취득가액 기준 일반세율 ──
+  // ── 일반세율 계산 (1주택 / 비조정 2주택) ──
+  // 지방세법 제11조제1항제8호
+  // 6억 이하: 1% / 6억 초과~9억 이하: 계산식 / 9억 초과: 3%
+  function generalRate(p) {
+    if (p <= 600000000) return 0.01;
+    if (p <= 900000000) {
+      // 법정 계산식: (취득가액 × 2 / 300,000,000 - 3) / 100
+      // 예) 7억 → (7억×2/3억 - 3)/100 = (4.6667-3)/100 = 1.6667%
+      return ((p * 2 / 300000000) - 3) / 100;
+    }
+    return 0.03;
+  }
+
+  // ── 1주택 (무주택→1주택) ──
   if (houseCount === 1) {
-    if (price <= 60000000)  return 0.01; // 6억 이하 → 1%
-    if (price <= 90000000)  return 0.02; // 6억 초과 9억 이하 → 2%
-    return 0.03;                          // 9억 초과 → 3%
+    return generalRate(price);
   }
 
   // ── 2주택 ──
   if (houseCount === 2) {
-    if (isAdjusted === 1) return 0.08;   // 조정 2주택 → 8%
-    // 비조정 2주택 → 일반세율 (취득가액 기준)
-    if (price <= 60000000)  return 0.01;
-    if (price <= 90000000)  return 0.02;
-    return 0.03;
+    if (isAdjusted === 1) return 0.08;  // 조정 2주택 → 8%
+    return generalRate(price);           // 비조정 2주택 → 일반세율
   }
 
   // ── 3주택 이상 ──
   if (houseCount >= 3) {
-    if (isAdjusted === 1) return 0.12;   // 조정 3주택+ → 12%
-    return 0.08;                          // 비조정 3주택 → 8% (비조정 4주택+도 동일)
+    if (isAdjusted === 1) return 0.12;  // 조정 3주택+ → 12%
+    return 0.08;                         // 비조정 3주택+ → 8%
   }
 
-  return 0.01;
+  return generalRate(price);
 }
 
-// 지방교육세 + 농어촌특별세 포함 실효세율 계산
-// ※ 농어촌특별세: 85㎡ 초과 0.2%, 이하 면제 → UI에 전용면적 입력 없으므로 '85㎡ 이하' 기본 (0%)
-//   사용자 선택으로 포함 여부 구분
+// ─── 지방교육세 + 농어촌특별세 포함 최종 세율 ────────────────────────────────
+// 지방세법 제151조: 주택 지방교육세 = 취득가액 × (취득세율 × 50%) × 20%
+//   → 취득세액 기준으로 환산하면: 취득세 × (50% × 20%) = 취득세 × 10%
+//   즉, 최종세율 = 취득세율 + 취득세율 × 0.10 = 취득세율 × 1.10
+// 농어촌특별세: 85㎡ 초과 주택 0.2%, 이하 면제
 function getTotalAcquiRate(baseRate, includeAgri) {
-  // 지방교육세: 일반세율(1~3%) → 취득세의 20% / 중과세율(8%,12%) → 취득세의 20%
-  // (지방세법상 표준세율 구간 무관하게 취득세액의 20%)
-  const eduRate = baseRate * 0.20;
-  // 농어촌특별세: 85㎡ 초과 주택에만 0.2%, 이하는 0
-  const agriRate = includeAgri ? 0.002 : 0;
+  const eduRate = baseRate * 0.10;           // 지방교육세: 취득세의 10%
+  const agriRate = includeAgri ? 0.002 : 0; // 농어촌특별세: 85㎡ 초과만 0.2%
   return baseRate + eduRate + agriRate;
 }
 
