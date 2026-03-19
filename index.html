@@ -800,6 +800,30 @@
     </div>
 
     <div class="divider"></div>
+    <div class="section-divider"><span>대출 정보</span></div>
+
+    <div class="grid-2" style="margin-bottom:18px;">
+      <div class="field">
+        <label>대출 잔액 <span class="hint">(매도 시 상환, 만원)</span></label>
+        <div class="input-wrap">
+          <input type="number" id="loanBalance" placeholder="없으면 0 또는 비워두세요" oninput="autoCalc()">
+          <span class="unit">만원</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>대출 상환 후 잔여 수령액 <span class="hint">(자동)</span></label>
+        <div class="computed-field" style="border-color:rgba(0,136,255,0.25); background:#eef6ff;">
+          <span class="computed-label">실수령 − 대출잔액</span>
+          <span class="computed-value" id="netReceiptAfterLoan">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-note" style="margin-top:0;">
+      💡 대출 잔액을 입력하면 매도 후 실수령액에서 대출금 상환분이 자동으로 차감됩니다. 중도상환수수료가 있는 경우 기타 필요경비에 추가하세요.
+    </div>
+
+    <div class="divider"></div>
     <div class="section-divider"><span>양도세 설정</span></div>
 
     <div class="grid-3">
@@ -816,7 +840,7 @@
       <div class="field">
         <label>매도 시 주택 수</label>
         <div class="input-wrap">
-          <select id="sellHouseCount" onchange="autoCalc()" style="padding-right:14px;">
+          <select id="sellHouseCount" onchange="onSellHouseChange()" style="padding-right:14px;">
             <option value="1">1주택 (비과세 검토)</option>
             <option value="2" selected>2주택</option>
             <option value="3">3주택 이상</option>
@@ -1090,6 +1114,18 @@ function fmtRate(r) {
   return (r * 100).toFixed(1) + '%';
 }
 
+// ─── 매도 주택 수 변경 시 비과세 자동 연동 ──────────────────────────────────
+function onSellHouseChange() {
+  const sellCount = parseInt(document.getElementById('sellHouseCount').value);
+  const isTaxFree = document.getElementById('isTaxFree');
+  if (sellCount === 1) {
+    isTaxFree.value = '1'; // 1주택 선택 시 비과세 자동 선택
+  } else {
+    isTaxFree.value = '0'; // 2주택 이상이면 해당없음으로 자동 해제
+  }
+  autoCalc();
+}
+
 // ─── 자동 계산 ───────────────────────────────────────────────────────────────
 function autoCalc() {
   const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
@@ -1131,9 +1167,22 @@ function autoCalc() {
     document.getElementById('brokerVat').textContent = fmt(brokerVat);
     document.getElementById('totalBuyCost').textContent = fmt(totalBuy);
     document.getElementById('realInvestAmt').textContent = fmt(realInvest);
+
+    // 대출 잔액 미리보기
+    const curPrice2 = parseFloat(document.getElementById('curPrice').value) || 0;
+    const curJeonse2 = parseFloat(document.getElementById('curJeonse').value) || 0;
+    const loanBalance2 = parseFloat(document.getElementById('loanBalance').value) || 0;
+    if (curPrice2 > 0 && loanBalance2 > 0) {
+      const refund2 = curJeonse2 || jeonsePrice;
+      const approxReceipt = curPrice2 - refund2 - loanBalance2;
+      document.getElementById('netReceiptAfterLoan').textContent = fmt(approxReceipt) + ' (세금 전)';
+    } else {
+      document.getElementById('netReceiptAfterLoan').textContent = loanBalance2 > 0 ? fmt(-loanBalance2) + ' (호가 미입력)' : '—';
+    }
   } else {
     ['acquiBaseRateText','acquiTaxRateText','acquiTaxAmt','acquiTotal',
-     'brokerRateText','brokerFeeAmt','brokerVat','totalBuyCost','realInvestAmt'].forEach(id => {
+     'brokerRateText','brokerFeeAmt','brokerVat','totalBuyCost','realInvestAmt',
+     'netReceiptAfterLoan'].forEach(id => {
       document.getElementById(id).textContent = '—';
     });
   }
@@ -1159,6 +1208,8 @@ function calculate() {
   const brokerRateInputVal = document.getElementById('brokerRateInput').value;
   const customBrokerRate = brokerRateInputVal !== '' ? parseFloat(brokerRateInputVal) : null;
 
+  const loanBalance = parseFloat(document.getElementById('loanBalance').value) || 0;
+
   if (!buyPrice || !curPrice) {
     alert('매수가와 현재 호가를 입력해주세요.');
     return;
@@ -1183,7 +1234,7 @@ function calculate() {
   const taxResult = calcTransferTax({
     buyPrice,
     sellPrice: curPrice,
-    acquiTax: acquiTax + brokerTotal, // 취득세 + 수수료 모두 필요경비
+    acquiTax: acquiTax + brokerTotal,
     extraCost: extraCostInput,
     holdPeriod,
     sellHouseCount,
@@ -1195,7 +1246,10 @@ function calculate() {
   const netGain = curPrice - totalBuy - extraCostInput - taxResult.total;
 
   const refundJeonse = curJeonse || jeonsePrice;
+  // 실수령액 (대출 상환 전)
   const netReceipt = curPrice - refundJeonse - taxResult.total - extraCostInput;
+  // 실수령액 (대출 상환 후)
+  const netReceiptAfterLoan = netReceipt - loanBalance;
 
   const yieldRate = realInvest > 0 ? netGain / realInvest : 0;
   const simpleYield = realInvest > 0 ? rawGain / realInvest : 0;
@@ -1206,6 +1260,7 @@ function calculate() {
   secEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const positiveGain = netGain >= 0;
+  const positiveAfterLoan = netReceiptAfterLoan >= 0;
   document.getElementById('summary-grid').innerHTML = `
     <div class="summary-box highlight">
       <div class="summary-box-label">시세차익 (매수가 기준)</div>
@@ -1237,6 +1292,12 @@ function calculate() {
       <div class="summary-box-value accent">${fmt(netReceipt)}</div>
       <div class="summary-box-sub">호가 − 전세반환 − 세금 − 경비</div>
     </div>
+    ${loanBalance > 0 ? `
+    <div class="summary-box" style="grid-column: 1 / -1; border-color:rgba(0,136,255,0.35); background:#eef6ff;">
+      <div class="summary-box-label" style="color:var(--accent)">🏦 대출 상환 후 최종 실수령액</div>
+      <div class="summary-box-value ${positiveAfterLoan ? '' : 'red'}" style="${positiveAfterLoan ? 'color:var(--accent)' : ''}">${fmt(netReceiptAfterLoan)}</div>
+      <div class="summary-box-sub">실수령액 ${fmt(netReceipt)} − 대출잔액 ${fmt(loanBalance)}</div>
+    </div>` : ''}
   `;
 
   // ─── Yield Bar ───
@@ -1260,7 +1321,11 @@ function calculate() {
     <tr class="sub-row"><td>전세 반환금</td><td class="tag-minus">▼ ${fmt(refundJeonse)}</td></tr>
     <tr class="sub-row"><td>기타 경비 (매도 중개수수료 등)</td><td class="tag-minus">▼ ${fmt(extraCostInput)}</td></tr>
     <tr class="sub-row"><td>양도세 + 지방세</td><td class="tag-minus">▼ ${fmt(taxResult.total)}</td></tr>
-    <tr class="total-row"><td>💵 매도 후 실수령액</td><td>${fmt(netReceipt)}</td></tr>
+    <tr><td style="font-weight:700;color:var(--text)">💵 매도 후 실수령액</td><td style="color:var(--accent);font-weight:700">${fmt(netReceipt)}</td></tr>
+    ${loanBalance > 0 ? `
+    <tr class="sub-row"><td>🏦 대출 잔액 상환</td><td class="tag-minus">▼ ${fmt(loanBalance)}</td></tr>
+    <tr class="total-row"><td>🏦 대출 상환 후 최종 실수령액</td><td style="color:var(--accent)">${fmt(netReceiptAfterLoan)}</td></tr>
+    ` : `<tr class="total-row"><td>💵 최종 실수령액</td><td>${fmt(netReceipt)}</td></tr>`}
   `;
 
   // ─── Tax Detail ───
